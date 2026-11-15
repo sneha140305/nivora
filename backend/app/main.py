@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth import router as auth_router
 from app.database.base import Base
 from app.database.session import engine
-from app.models import User
+from app.models import LifestyleProfile, User
+from app.api.profile import router as profile_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -26,7 +27,7 @@ app.add_middleware(
 
 # Register authentication routes
 app.include_router(auth_router)
-
+app.include_router(profile_router)
 
 @app.get("/")
 def home():
