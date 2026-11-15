@@ -1,0 +1,21 @@
+:root {
+  --color-primary: #183D35;
+  --color-secondary: #8BAE9B;
+  --color-background: #F8F7F2;
+  --color-surface: #FFFFFF;
+  --color-text: #252A28;
+  --color-muted: #858B87;
+  --color-accent: #E99B80;
+
+  --font-heading: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 30px;
+
+  --shadow-card: 0 8px 30px rgba(24, 61, 53, 0.06);
+
+  --transition: 0.25s ease;
+}
