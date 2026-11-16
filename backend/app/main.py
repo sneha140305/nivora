@@ -6,6 +6,7 @@ from app.database.base import Base
 from app.database.session import engine
 from app.models import LifestyleProfile, User
 from app.api.profile import router as profile_router
+from app.api.matching import router as matching_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -28,6 +29,7 @@ app.add_middleware(
 # Register authentication routes
 app.include_router(auth_router)
 app.include_router(profile_router)
+app.include_router(matching_router)
 
 @app.get("/")
 def home():
