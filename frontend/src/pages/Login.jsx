@@ -3,10 +3,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { apiRequest } from "../services/api";
 import "./Auth.css";
-
+import { useAuth } from "../context/useAuth";
 function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setUser } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -47,6 +48,8 @@ function Login() {
       });
 
       localStorage.setItem("nivora_token", response.access_token);
+      const currentUser = await apiRequest("/api/auth/me");
+      setUser(currentUser);
 
       navigate("/", { replace: true });
     } catch (err) {

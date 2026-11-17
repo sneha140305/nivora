@@ -808,3 +808,102 @@
     }
   }
 }
+
+/* TEXT ALIGNMENT FIXES */
+
+.hero-content,
+.section-heading,
+.matching-content,
+.cta-content {
+  text-align: left;
+}
+
+.hero h1,
+.section-heading h2,
+.matching-content h2,
+.cta-content h2 {
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.hero-description,
+.section-heading > p,
+.matching-content > p,
+.cta-content > p {
+  text-align: left;
+}
+
+.feature-card h3,
+.feature-card p,
+.step-card h3,
+.step-card p {
+  text-align: left;
+}
+
+.match-info {
+  min-width: 0;
+}
+
+.match-info h3,
+.match-info p {
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 900px) {
+  .hero-content {
+    text-align: center;
+  }
+
+  .hero-description {
+    text-align: center;
+  }
+}
+
+.nav-user {
+  color: #183D35;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.nav-logout {
+  background: #183D35;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 9px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.nav-logout:hover {
+  background: #28594D;
+}
+
+/* FLOATING LABEL ALIGNMENT */
+
+.label-top {
+  top: 36px;
+  right: -20px;
+}
+
+.label-bottom {
+  bottom: 35px;
+  left: -75px;
+  white-space: nowrap;
+}
+
+.floating-label {
+  z-index: 5;
+}
+
+@media (max-width: 900px) {
+  .label-top {
+    right: 5%;
+  }
+
+  .label-bottom {
+    left: 5%;
+    bottom: 10px;
+  }
+}

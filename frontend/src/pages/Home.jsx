@@ -12,10 +12,8 @@ import {
 } from "lucide-react";
 
 import "./Home.css";
-
-
-import "./Home.css";
-
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 const features = [
   {
     icon: Moon,
@@ -59,11 +57,19 @@ const matches = [
 ];
 
 function Navbar() {
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <nav className="navbar">
-      <a href="#" className="brand">
+      <Link to="/" className="brand">
         nivora<span>.</span>
-      </a>
+      </Link>
 
       <div className="nav-links">
         <a href="#how-it-works">How it works</a>
@@ -72,10 +78,27 @@ function Navbar() {
       </div>
 
       <div className="nav-actions">
-        <a href="#login" className="login-link">Log in</a>
-        <a href="#signup" className="nav-cta">
-          Get started <ArrowUpRight size={16} />
-        </a>
+        {isAuthenticated ? (
+          <>
+            <span className="nav-user">
+              Hi, {user?.full_name?.split(" ")[0]}
+            </span>
+
+            <button className="nav-logout" onClick={handleLogout}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="login-link">
+              Log in
+            </Link>
+
+            <Link to="/register" className="nav-cta">
+              Get started <ArrowUpRight size={16} />
+            </Link>
+          </>
+        )}
       </div>
 
       <button className="mobile-menu" aria-label="Open menu">
