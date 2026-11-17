@@ -5,7 +5,7 @@ import { useAuth } from "./context/useAuth";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-
+import Dashboard from "./pages/Dashboard";
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
@@ -53,7 +53,7 @@ function AppRoutes() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <div>Dashboard coming soon!</div>
+            <Dashboard />
           </ProtectedRoute>
         }
       />
