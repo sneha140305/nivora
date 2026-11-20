@@ -1,0 +1,452 @@
+.discover-page {
+  min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.discover-header {
+  height: 76px;
+  padding: 0 7%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-surface);
+  border-bottom: 1px solid #e9ece8;
+}
+
+.discover-logo {
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.discover-logo span {
+  color: var(--color-accent);
+}
+
+.back-dashboard {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.discover-container {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 65px 25px;
+}
+
+.discover-intro {
+  margin-bottom: 35px;
+}
+
+.discover-eyebrow {
+  color: #789487;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.discover-intro h1 {
+  font-size: clamp(32px, 5vw, 48px);
+  letter-spacing: -1.8px;
+  color: var(--color-primary);
+  margin-bottom: 12px;
+}
+
+.discover-intro > p:last-child {
+  color: var(--color-muted);
+  font-size: 15px;
+}
+
+.discover-search {
+  display: flex;
+  align-items: flex-end;
+  gap: 15px;
+  padding: 22px;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 55px;
+}
+
+.search-input-wrapper {
+  flex: 1;
+}
+
+.search-input-wrapper label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 9px;
+}
+
+.search-input-wrapper input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #e2e8e3;
+  border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: #fcfdfb;
+}
+
+.search-input-wrapper input:focus {
+  border-color: var(--color-secondary);
+}
+
+.discover-search button,
+.discover-action {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 15px 24px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.discover-search button:hover,
+.discover-action:hover {
+  background: #285b4e;
+}
+
+.discover-search button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.matches-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.matches-heading h2 {
+  font-size: 27px;
+  color: var(--color-primary);
+}
+
+.city-tag {
+  padding: 8px 15px;
+  border-radius: 30px;
+  background: #e7eee9;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.roommate-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.roommate-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 25px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid #edf0ec;
+}
+
+.roommate-card-top {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.roommate-avatar {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e6eee8;
+  color: var(--color-primary);
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.roommate-identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.roommate-identity h3 {
+  color: var(--color-primary);
+  font-size: 17px;
+  margin-bottom: 5px;
+}
+
+.roommate-identity p {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.compatibility-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 66px;
+  height: 66px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #eaf2ec;
+  color: var(--color-primary);
+}
+
+.compatibility-score strong {
+  font-size: 18px;
+}
+
+.compatibility-score span {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.roommate-location {
+  margin-top: 20px;
+  color: #718078;
+  font-size: 13px;
+}
+
+.roommate-location span {
+  margin-right: 6px;
+}
+
+.roommate-bio {
+  margin-top: 15px;
+  color: #626d66;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.roommate-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 25px;
+  padding: 18px 0;
+  margin-top: 12px;
+  border-bottom: 1px solid #edf0ec;
+}
+
+.roommate-details div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.roommate-details span {
+  color: var(--color-muted);
+  font-size: 11px;
+}
+
+.roommate-details strong {
+  color: var(--color-primary);
+  font-size: 13px;
+}
+
+.match-message {
+  margin: 17px 0;
+  padding: 13px;
+  background: #f3f7f3;
+  border-radius: 10px;
+  color: #476456;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.compatibility-breakdown {
+  padding: 14px 0;
+  border-top: 1px solid #edf0ec;
+  border-bottom: 1px solid #edf0ec;
+}
+
+.compatibility-breakdown summary {
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.breakdown-content {
+  padding-top: 14px;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 0;
+  font-size: 12px;
+  border-bottom: 1px solid #f0f2ef;
+}
+
+.breakdown-row strong {
+  color: var(--color-primary);
+}
+
+.factor-group {
+  margin-top: 18px;
+}
+
+.factor-group h4 {
+  margin-bottom: 10px;
+  color: #526158;
+  font-size: 12px;
+}
+
+.factor-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.match-tag,
+.conflict-tag {
+  padding: 7px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.match-tag {
+  background: #eaf3ec;
+  color: #3e7655;
+}
+
+.conflict-tag {
+  background: #fff0e9;
+  color: #b36b4f;
+}
+
+.discover-empty,
+.discover-message {
+  text-align: center;
+  padding: 65px 20px;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.discover-empty h3 {
+  margin-bottom: 12px;
+  color: var(--color-primary);
+  font-size: 21px;
+}
+
+.discover-empty p,
+.discover-message p {
+  max-width: 450px;
+  margin: 0 auto 22px;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.discover-action {
+  display: inline-block;
+  margin-top: 5px;
+}
+
+.empty-icon {
+  font-size: 38px;
+  margin-bottom: 15px;
+  color: var(--color-secondary);
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 18px;
+  border: 3px solid #e6eee8;
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: discover-spin 0.8s linear infinite;
+}
+
+@keyframes discover-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 700px) {
+  .discover-container {
+    padding: 40px 18px;
+  }
+
+  .discover-search {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .discover-search button {
+    width: 100%;
+  }
+
+  .roommate-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .matches-heading {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .matches-heading h2 {
+    font-size: 22px;
+  }
+
+  .discover-header {
+    padding: 0 20px;
+  }
+}
+
+@media (max-width: 400px) {
+  .roommate-card {
+    padding: 18px;
+  }
+
+  .roommate-avatar {
+    width: 43px;
+    height: 43px;
+  }
+
+  .compatibility-score {
+    width: 58px;
+    height: 58px;
+  }
+}
+.discover-search-button {
+  display: block !important;
+  min-width: 160px;
+  min-height: 48px;
+  flex-shrink: 0;
+  visibility: visible;
+  opacity: 1;
+  background: #183D35;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 22px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.discover-search-button:hover {
+  background: #285b4e;
+}
