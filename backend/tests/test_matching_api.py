@@ -216,3 +216,129 @@ def test_matching_sorts_by_compatibility(client):
     assert matches[0]["compatibility_score"] >= (
         matches[1]["compatibility_score"]
     )
+
+def test_roommate_details_requires_authentication(client):
+    response = client.get("/api/matching/2")
+
+    assert response.status_code == 401
+
+
+def test_get_roommate_details(client):
+    current_headers = create_user(
+        client,
+        "details1@example.com",
+        "Current User",
+    )
+    create_lifestyle_profile(client, current_headers)
+
+    roommate_headers = create_user(
+        client,
+        "details2@example.com",
+        "Roommate User",
+    )
+    profile_response = create_lifestyle_profile(
+        client,
+        roommate_headers,
+        city="Bhopal",
+        occupation="working_professional",
+        bio="A quiet and responsible person.",
+        budget_min=7000,
+        budget_max=12000,
+        sleep_time="22:30",
+        wake_time="06:30",
+        work_schedule="remote",
+        cleanliness_level="very_clean",
+        noise_tolerance="low",
+        food_preference="vegetarian",
+        social_level="introvert",
+        guest_frequency="rarely",
+        pets_allowed=False,
+    )
+
+    roommate_id = profile_response.json()["user_id"]
+
+    response = client.get(
+        f"/api/matching/{roommate_id}",
+        headers=current_headers,
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["user_id"] == roommate_id
+    assert data["full_name"] == "Roommate User"
+    assert data["city"] == "Bhopal"
+    assert data["occupation"] == "working_professional"
+    assert data["bio"] == "A quiet and responsible person."
+    assert data["budget_min"] == 7000
+    assert data["budget_max"] == 12000
+    assert data["sleep_time"] == "22:30"
+    assert data["wake_time"] == "06:30"
+    assert data["work_schedule"] == "remote"
+    assert data["cleanliness_level"] == "very_clean"
+    assert data["noise_tolerance"] == "low"
+    assert data["food_preference"] == "vegetarian"
+    assert data["social_level"] == "introvert"
+    assert data["guest_frequency"] == "rarely"
+    assert data["pets_allowed"] is False
+    assert 0 <= data["compatibility_score"] <= 100
+    assert data["compatibility_score"] > 0
+    assert "category_scores" in data
+    assert "matched_factors" in data
+    assert "conflict_factors" in data
+
+
+def test_roommate_details_not_found(client):
+    current_headers = create_user(
+        client,
+        "details3@example.com",
+        "Current User",
+    )
+    create_lifestyle_profile(client, current_headers)
+
+    response = client.get(
+        "/api/matching/9999",
+        headers=current_headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Roommate not found."
+
+
+def test_cannot_view_self_as_roommate(client):
+    headers = create_user(
+        client,
+        "details4@example.com",
+        "Current User",
+    )
+    profile_response = create_lifestyle_profile(client, headers)
+    user_id = profile_response.json()["user_id"]
+
+    response = client.get(
+        f"/api/matching/{user_id}",
+        headers=headers,
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == (
+        "You cannot view yourself as a roommate match."
+    )
+
+
+def test_roommate_details_requires_current_user_profile(client):
+    headers = create_user(
+        client,
+        "details5@example.com",
+        "Current User",
+    )
+
+    response = client.get(
+        "/api/matching/2",
+        headers=headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == (
+        "Please create your lifestyle profile first."
+    )

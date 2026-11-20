@@ -27,3 +27,13 @@ class RoommateMatch(BaseModel):
 class MatchingResponse(BaseModel):
     total_matches: int
     matches: list[RoommateMatch]
+
+
+class RoommateDetailResponse(RoommateMatch):
+    work_schedule: str | None = None
+    cleanliness_level: str | None = None
+    noise_tolerance: str | None = None
+    food_preference: str | None = None
+    social_level: str | None = None
+    guest_frequency: str | None = None
+    pets_allowed: bool | None = None
