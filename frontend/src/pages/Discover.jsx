@@ -256,6 +256,12 @@ function Discover() {
                       </div>
                     </div>
                   )}
+                  <Link
+                    to={`/roommates/${match.user_id}`}
+                    className="discover-action"
+                  >
+                    View Full Profile →
+                  </Link>
                 </article>
               ))}
             </div>

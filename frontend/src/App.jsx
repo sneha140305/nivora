@@ -7,6 +7,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Discover from "./pages/Discover";
+import RoommateDetails from "./pages/RoommateDetails";
+
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
@@ -71,6 +73,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Discover />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/roommates/:userId"
+        element={
+          <ProtectedRoute>
+            <RoommateDetails />
           </ProtectedRoute>
         }
       />
