@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.models.connection import ConnectionRequest
 from app.models.profile import LifestyleProfile
 from app.models.user import User
+from app.services.notification import create_notification
 
 
 def send_connection_request(
@@ -32,7 +33,9 @@ def send_connection_request(
     )
 
     if not receiver_profile:
-        raise ValueError("This user does not have a completed lifestyle profile.")
+        raise ValueError(
+            "This user does not have a completed lifestyle profile."
+        )
 
     existing = (
         db.query(ConnectionRequest)
@@ -58,16 +61,29 @@ def send_connection_request(
         if request.status == "pending":
             if request.sender_id == sender_id:
                 raise ValueError("You have already sent a request to this user.")
-            raise ValueError("This user has already sent you a request. Check received requests.")
 
-    # Allow the original sender to resend a previously rejected request.
-    # Allow either user to retry a previously rejected request.
+            raise ValueError(
+                "This user has already sent you a request. "
+                "Check received requests."
+            )
+
+    # Allow previously rejected requests to be sent again.
     for request in existing:
         if request.status == "rejected":
             request.sender_id = sender_id
             request.receiver_id = receiver_id
             request.status = "pending"
             request.created_at = datetime.now(timezone.utc)
+
+            create_notification(
+                db=db,
+                user_id=receiver_id,
+                actor_id=sender_id,
+                notification_type="connection_request",
+                title="New Connection Request",
+                message="Someone wants to connect with you on NIVORA.",
+                link="/connections",
+            )
 
             db.commit()
             db.refresh(request)
@@ -80,6 +96,17 @@ def send_connection_request(
     )
 
     db.add(connection)
+
+    create_notification(
+        db=db,
+        user_id=receiver_id,
+        actor_id=sender_id,
+        notification_type="connection_request",
+        title="New Connection Request",
+        message="Someone wants to connect with you on NIVORA.",
+        link="/connections",
+    )
+
     db.commit()
     db.refresh(connection)
 
@@ -108,6 +135,17 @@ def update_connection_request(
         raise ValueError("This request has already been processed.")
 
     request.status = new_status
+
+    if new_status == "accepted":
+        create_notification(
+            db=db,
+            user_id=request.sender_id,
+            actor_id=current_user_id,
+            notification_type="connection_accepted",
+            title="Connection Accepted",
+            message="Your connection request has been accepted!",
+            link="/connections",
+        )
 
     db.commit()
     db.refresh(request)

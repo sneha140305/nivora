@@ -4,11 +4,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth import router as auth_router
 from app.database.base import Base
 from app.database.session import engine
-from app.models import LifestyleProfile, User
+from app.models import LifestyleProfile, User,Notification
 from app.api.profile import router as profile_router
 from app.api.matching import router as matching_router
 from app.api.connections import router as connections_router
 from app.api.messages import router as messages_router
+from app.api.notifications import router as notifications_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -34,6 +35,7 @@ app.include_router(profile_router)
 app.include_router(matching_router)
 app.include_router(connections_router)
 app.include_router(messages_router)
+app.include_router(notifications_router)
 
 @app.get("/")
 def home():

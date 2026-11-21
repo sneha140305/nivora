@@ -12,6 +12,7 @@ from app.schemas.message import (
     MessageCreate,
     MessageResponse,
 )
+from app.services.notification import create_notification
 
 router = APIRouter(prefix="/api/messages", tags=["Messages"])
 
@@ -84,11 +85,21 @@ def send_message(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Message cannot be empty.",
         )
-
+    
     db.add(message)
+
+    create_notification(
+        db=db,
+        user_id=user_id,
+        actor_id=current_user.id,
+        notification_type="new_message",
+        title="New Message",
+        message=f"{current_user.full_name} sent you a message.",
+        link=f"/messages/{current_user.id}",
+    )
+
     db.commit()
     db.refresh(message)
-
     return message
 
 
