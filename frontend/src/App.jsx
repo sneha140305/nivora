@@ -10,6 +10,7 @@ import Discover from "./pages/Discover";
 import RoommateDetails from "./pages/RoommateDetails";
 import Connections from "./pages/Connections";
 import Messages from "./pages/Messages";
+import Conversation from "./pages/Conversation";
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -104,6 +105,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Messages />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/messages/:userId"
+        element={
+          <ProtectedRoute>
+            <Conversation />
           </ProtectedRoute>
         }
       />

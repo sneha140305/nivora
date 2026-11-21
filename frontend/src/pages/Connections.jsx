@@ -11,13 +11,15 @@ import {
   LoaderCircle,
   Inbox,
   Send,
+  MessageCircle,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { apiRequest } from "../services/api";
 import "./Connections.css";
 
 function Connections() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("received");
   const [received, setReceived] = useState([]);
   const [sent, setSent] = useState([]);
@@ -267,6 +269,16 @@ function Connections() {
                   <Clock size={14} />
                   Requested on {formatDate(request.created_at)}
                 </div>
+
+                {request.status === "accepted" && (
+                    <button
+                        className="connection-accept"
+                        onClick={() => navigate(`/messages/${request.user.id}`)}
+                    >
+                        <MessageCircle size={16} />
+                        Message
+                    </button>
+                )}
 
                 {activeTab === "received" && request.status === "pending" && (
                   <div className="connection-actions">
