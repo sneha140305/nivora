@@ -11,6 +11,7 @@ import RoommateDetails from "./pages/RoommateDetails";
 import Connections from "./pages/Connections";
 import Messages from "./pages/Messages";
 import Conversation from "./pages/Conversation";
+import Notifications from "./pages/Notifications";
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -115,6 +116,14 @@ function AppRoutes() {
             <Conversation />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <Notifications />
+          </ProtectedRoute>
+       }
       />
     </Routes>
   );
