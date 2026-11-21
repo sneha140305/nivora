@@ -8,6 +8,7 @@ from app.models import LifestyleProfile, User
 from app.api.profile import router as profile_router
 from app.api.matching import router as matching_router
 from app.api.connections import router as connections_router
+from app.api.messages import router as messages_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -32,6 +33,7 @@ app.include_router(auth_router)
 app.include_router(profile_router)
 app.include_router(matching_router)
 app.include_router(connections_router)
+app.include_router(messages_router)
 
 @app.get("/")
 def home():
