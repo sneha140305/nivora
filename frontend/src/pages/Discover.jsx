@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../services/api";
 import "./Discover.css";
+import "./DiscoverFilters.css";
 
 const factorLabels = {
   sleep: "Sleep Schedule",
@@ -15,6 +16,15 @@ const factorLabels = {
   pets: "Pet Preference",
 };
 
+const initialFilters = {
+  sleep: "",
+  food: "",
+  cleanliness: "",
+  budgetMin: "",
+  budgetMax: "",
+  sort: "high",
+};
+
 function Discover() {
   const [matches, setMatches] = useState([]);
   const [totalMatches, setTotalMatches] = useState(0);
@@ -22,6 +32,7 @@ function Discover() {
   const [searchCity, setSearchCity] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [filters, setFilters] = useState(initialFilters);
 
   const fetchMatches = async (selectedCity = "") => {
     setLoading(true);
@@ -47,7 +58,7 @@ function Discover() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-        fetchMatches();
+      fetchMatches();
     }, 0);
 
     return () => window.clearTimeout(timer);
@@ -55,9 +66,92 @@ function Discover() {
 
   const handleSearch = (event) => {
     event.preventDefault();
-    setSearchCity(city);
+    setSearchCity(city.trim());
     fetchMatches(city);
   };
+
+  const updateFilter = (key, value) => {
+    setFilters((previous) => ({
+      ...previous,
+      [key]: value,
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters(initialFilters);
+  };
+
+  const getOptions = (field) => {
+    return [
+      ...new Set(
+        matches
+          .map((match) => match[field])
+          .filter((value) => value != null && String(value).trim() !== "")
+          .map(String)
+      ),
+    ].sort((a, b) => a.localeCompare(b));
+  };
+
+  const filteredMatches = useMemo(() => {
+    let result = [...matches];
+
+    if (filters.sleep) {
+      result = result.filter(
+        (match) => match.sleep_time === filters.sleep
+      );
+    }
+
+    if (filters.food) {
+      result = result.filter(
+        (match) => match.food_preference === filters.food
+      );
+    }
+
+    if (filters.cleanliness) {
+      result = result.filter(
+        (match) => match.cleanliness_level === filters.cleanliness
+      );
+    }
+
+    const minimumBudget =
+      filters.budgetMin !== "" ? Number(filters.budgetMin) : null;
+
+    const maximumBudget =
+      filters.budgetMax !== "" ? Number(filters.budgetMax) : null;
+
+    if (minimumBudget !== null || maximumBudget !== null) {
+      result = result.filter((match) => {
+        if (match.budget_min == null || match.budget_max == null) {
+          return false;
+        }
+
+        const overlapsMinimum =
+          minimumBudget === null || match.budget_max >= minimumBudget;
+
+        const overlapsMaximum =
+          maximumBudget === null || match.budget_min <= maximumBudget;
+
+        return overlapsMinimum && overlapsMaximum;
+      });
+    }
+
+    result.sort((a, b) => {
+      const difference =
+        a.compatibility_score - b.compatibility_score;
+
+      return filters.sort === "low" ? difference : -difference;
+    });
+
+    return result;
+  }, [matches, filters]);
+
+  const activeFilterCount = [
+    filters.sleep,
+    filters.food,
+    filters.cleanliness,
+    filters.budgetMin,
+    filters.budgetMax,
+  ].filter((value) => value !== "").length;
 
   return (
     <div className="discover-page">
@@ -101,13 +195,142 @@ function Discover() {
           </button>
         </form>
 
+        <section className="discover-filters">
+          <div className="filters-heading">
+            <div>
+              <p className="discover-eyebrow">REFINE YOUR SEARCH</p>
+              <h2>Find your ideal match</h2>
+              <p>Filter roommates by the lifestyle that matters to you.</p>
+            </div>
+
+            <button
+              type="button"
+              className="clear-filters-button"
+              onClick={clearFilters}
+              disabled={activeFilterCount === 0 && filters.sort === "high"}
+            >
+              Clear filters
+              {activeFilterCount > 0 && (
+                <span>{activeFilterCount}</span>
+              )}
+            </button>
+          </div>
+
+          <div className="filters-grid">
+            <div className="filter-field">
+              <label htmlFor="sleep-filter">Sleep schedule</label>
+              <select
+                id="sleep-filter"
+                value={filters.sleep}
+                onChange={(event) =>
+                  updateFilter("sleep", event.target.value)
+                }
+              >
+                <option value="">Any schedule</option>
+                {getOptions("sleep_time").map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-field">
+              <label htmlFor="food-filter">Food preference</label>
+              <select
+                id="food-filter"
+                value={filters.food}
+                onChange={(event) =>
+                  updateFilter("food", event.target.value)
+                }
+              >
+                <option value="">Any preference</option>
+                {getOptions("food_preference").map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-field">
+              <label htmlFor="cleanliness-filter">Cleanliness</label>
+              <select
+                id="cleanliness-filter"
+                value={filters.cleanliness}
+                onChange={(event) =>
+                  updateFilter("cleanliness", event.target.value)
+                }
+              >
+                <option value="">Any level</option>
+                {getOptions("cleanliness_level").map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-field">
+              <label htmlFor="sort-filter">Sort by compatibility</label>
+              <select
+                id="sort-filter"
+                value={filters.sort}
+                onChange={(event) =>
+                  updateFilter("sort", event.target.value)
+                }
+              >
+                <option value="high">Highest match first</option>
+                <option value="low">Lowest match first</option>
+              </select>
+            </div>
+
+            <div className="filter-field">
+              <label htmlFor="budget-min">Minimum monthly budget (₹)</label>
+              <input
+                id="budget-min"
+                type="number"
+                min="0"
+                placeholder="e.g. 3000"
+                value={filters.budgetMin}
+                onChange={(event) =>
+                  updateFilter("budgetMin", event.target.value)
+                }
+              />
+            </div>
+
+            <div className="filter-field">
+              <label htmlFor="budget-max">Maximum monthly budget (₹)</label>
+              <input
+                id="budget-max"
+                type="number"
+                min="0"
+                placeholder="e.g. 10000"
+                value={filters.budgetMax}
+                onChange={(event) =>
+                  updateFilter("budgetMax", event.target.value)
+                }
+              />
+            </div>
+          </div>
+        </section>
+
         <section className="matches-section">
           <div className="matches-heading">
             <div>
               <p className="discover-eyebrow">YOUR COMPATIBILITY</p>
               <h2>
-                {loading ? "Finding matches..." : `${totalMatches} Roommate${totalMatches === 1 ? "" : "s"} Found`}
+                {loading
+                  ? "Finding matches..."
+                  : `${filteredMatches.length} Roommate${
+                      filteredMatches.length === 1 ? "" : "s"
+                    } Found`}
               </h2>
+              {!loading && matches.length !== filteredMatches.length && (
+                <p className="filter-result-count">
+                  Showing {filteredMatches.length} of {totalMatches} matches
+                </p>
+              )}
             </div>
 
             {searchCity && (
@@ -155,9 +378,29 @@ function Discover() {
             </div>
           )}
 
-          {!loading && !error && matches.length > 0 && (
+          {!loading &&
+            !error &&
+            matches.length > 0 &&
+            filteredMatches.length === 0 && (
+              <div className="discover-empty">
+                <div className="empty-icon">⌕</div>
+                <h3>No roommates match these filters.</h3>
+                <p>
+                  Try adjusting your preferences to discover more potential
+                  roommates.
+                </p>
+                <button
+                  className="discover-action"
+                  onClick={clearFilters}
+                >
+                  Clear all filters
+                </button>
+              </div>
+            )}
+
+          {!loading && !error && filteredMatches.length > 0 && (
             <div className="roommate-grid">
-              {matches.map((match) => (
+              {filteredMatches.map((match) => (
                 <article className="roommate-card" key={match.user_id}>
                   <div className="roommate-card-top">
                     <div className="roommate-avatar">
@@ -256,6 +499,7 @@ function Discover() {
                       </div>
                     </div>
                   )}
+
                   <Link
                     to={`/roommates/${match.user_id}`}
                     className="discover-action"
