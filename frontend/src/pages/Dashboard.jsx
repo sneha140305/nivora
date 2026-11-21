@@ -13,6 +13,7 @@ import {
   ClipboardList,
   LoaderCircle,
   Handshake,
+  MessageCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -101,6 +102,15 @@ function Dashboard() {
               <Handshake size={19} />
               My Connections
           </a>
+
+          <button
+            type="button"
+            className="sidebar-link"
+            onClick={() => navigate("/messages")}
+          >
+            <MessageCircle size={19} />
+            Messages
+          </button>
 
           <a href="#settings" className="sidebar-link">
             <Settings size={19} />

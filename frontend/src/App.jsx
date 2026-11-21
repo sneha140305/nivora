@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Discover from "./pages/Discover";
 import RoommateDetails from "./pages/RoommateDetails";
 import Connections from "./pages/Connections";
+import Messages from "./pages/Messages";
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -61,6 +62,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/profile"
         element={
@@ -69,6 +71,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/discover"
         element={
@@ -77,6 +80,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/roommates/:userId"
         element={
@@ -85,6 +89,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/connections"
         element={
@@ -93,7 +98,16 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-    </Routes>   
+
+      <Route
+        path="/messages"
+        element={
+          <ProtectedRoute>
+            <Messages />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
 
