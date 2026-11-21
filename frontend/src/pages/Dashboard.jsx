@@ -12,6 +12,7 @@ import {
   ArrowRight,
   ClipboardList,
   LoaderCircle,
+  Handshake,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -94,6 +95,11 @@ function Dashboard() {
           <a href="#discover" className="sidebar-link">
             <Users size={19} />
             Discover Roommates
+          </a>
+
+          <a href="/connections" className="sidebar-link">
+              <Handshake size={19} />
+              My Connections
           </a>
 
           <a href="#settings" className="sidebar-link">
