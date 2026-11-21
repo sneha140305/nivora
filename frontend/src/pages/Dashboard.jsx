@@ -14,6 +14,7 @@ import {
   LoaderCircle,
   Handshake,
   MessageCircle,
+  Bell,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -29,7 +30,9 @@ function Dashboard() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState("");
+  const [unreadCount, setUnreadCount] = useState(0);
 
+  // Fetch lifestyle profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -43,6 +46,29 @@ function Dashboard() {
     };
 
     fetchProfile();
+  }, []);
+
+  // Fetch unread notification count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const data = await apiRequest(
+          "/api/notifications/unread-count"
+        );
+
+        setUnreadCount(data.unread_count ?? 0);
+      } catch {
+        // Keep the dashboard usable if notifications cannot be loaded.
+      }
+    };
+
+    const initialTimer = setTimeout(fetchUnreadCount, 0);
+    const interval = setInterval(fetchUnreadCount, 30000);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -99,8 +125,8 @@ function Dashboard() {
           </a>
 
           <a href="/connections" className="sidebar-link">
-              <Handshake size={19} />
-              My Connections
+            <Handshake size={19} />
+            My Connections
           </a>
 
           <button
@@ -110,6 +136,21 @@ function Dashboard() {
           >
             <MessageCircle size={19} />
             Messages
+          </button>
+
+          <button
+            type="button"
+            className="sidebar-link"
+            onClick={() => navigate("/notifications")}
+          >
+            <Bell size={19} />
+            Notifications
+
+            {unreadCount > 0 && (
+              <span className="sidebar-notification-badge">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
           </button>
 
           <a href="#settings" className="sidebar-link">
@@ -130,23 +171,47 @@ function Dashboard() {
             <span className="dashboard-eyebrow">
               YOUR PERSONAL SPACE
             </span>
-            <h1>Welcome back, {user?.full_name?.split(" ")[0]}!</h1>
+
+            <h1>
+              Welcome back, {user?.full_name?.split(" ")[0]}!
+            </h1>
+
             <p>Let's find a living space that feels like home.</p>
           </div>
 
-          <div className="dashboard-avatar">
-            {user?.full_name?.charAt(0)?.toUpperCase()}
+          <div className="dashboard-header-actions">
+            <button
+              type="button"
+              className="dashboard-notification-button"
+              onClick={() => navigate("/notifications")}
+              aria-label={`Notifications, ${unreadCount} unread`}
+            >
+              <Bell size={22} />
+
+              {unreadCount > 0 && (
+                <span className="dashboard-notification-badge">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </button>
+
+            <div className="dashboard-avatar">
+              {user?.full_name?.charAt(0)?.toUpperCase()}
+            </div>
           </div>
         </header>
 
         <section className="dashboard-banner">
           <div>
             <span>YOUR NEXT CHAPTER STARTS HERE</span>
+
             <h2>Find someone who matches your rhythm.</h2>
+
             <p>
               Great shared living starts with compatible lifestyles.
               Complete your profile to discover your matches.
             </p>
+
             <a href="#profile" className="dashboard-primary-button">
               Complete your profile <ArrowRight size={17} />
             </a>
@@ -174,7 +239,10 @@ function Dashboard() {
 
           {loading ? (
             <div className="dashboard-message">
-              <LoaderCircle className="dashboard-spinner" size={22} />
+              <LoaderCircle
+                className="dashboard-spinner"
+                size={22}
+              />
               Loading your lifestyle profile...
             </div>
           ) : profile ? (
@@ -183,10 +251,14 @@ function Dashboard() {
                 const Icon = item.icon;
 
                 return (
-                  <article className="lifestyle-card" key={item.label}>
+                  <article
+                    className="lifestyle-card"
+                    key={item.label}
+                  >
                     <div className="lifestyle-icon">
                       <Icon size={21} />
                     </div>
+
                     <span>{item.label}</span>
                     <strong>{item.value}</strong>
                   </article>
@@ -200,8 +272,10 @@ function Dashboard() {
               </div>
 
               <h3>Your lifestyle profile is waiting!</h3>
+
               <p>
-                {profileError || "Tell us about your daily habits and preferences."}
+                {profileError ||
+                  "Tell us about your daily habits and preferences."}
               </p>
 
               <button
@@ -229,6 +303,7 @@ function Dashboard() {
 
             <div>
               <h3>Your next compatible roommate is out there.</h3>
+
               <p>
                 Explore people whose routines, habits and lifestyle
                 preferences align with yours.
@@ -245,7 +320,8 @@ function Dashboard() {
         </section>
 
         <footer className="dashboard-footer">
-          Find your rhythm. Find your people. <span>© 2026 NIVORA</span>
+          Find your rhythm. Find your people.
+          <span>© 2026 NIVORA</span>
         </footer>
       </main>
     </div>
