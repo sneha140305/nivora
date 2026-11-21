@@ -91,6 +91,8 @@ def discover_roommates(
                 budget_max=candidate_profile.budget_max,
                 sleep_time=candidate_profile.sleep_time,
                 wake_time=candidate_profile.wake_time,
+                cleanliness_level=candidate_profile.cleanliness_level,
+                food_preference=candidate_profile.food_preference,
                 compatibility_score=result["compatibility_score"],
                 category_scores=result["category_scores"],
                 matched_factors=result["matched_factors"],

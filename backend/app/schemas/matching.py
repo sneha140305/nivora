@@ -15,6 +15,9 @@ class RoommateMatch(BaseModel):
     sleep_time: str | None = None
     wake_time: str | None = None
 
+    cleanliness_level: str | None = None
+    food_preference: str | None = None
+
     compatibility_score: float
     category_scores: dict[str, float | None]
 
@@ -31,9 +34,7 @@ class MatchingResponse(BaseModel):
 
 class RoommateDetailResponse(RoommateMatch):
     work_schedule: str | None = None
-    cleanliness_level: str | None = None
     noise_tolerance: str | None = None
-    food_preference: str | None = None
     social_level: str | None = None
     guest_frequency: str | None = None
     pets_allowed: bool | None = None
