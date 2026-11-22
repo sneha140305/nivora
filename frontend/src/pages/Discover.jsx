@@ -34,6 +34,10 @@ function Discover() {
   const [error, setError] = useState("");
   const [filters, setFilters] = useState(initialFilters);
 
+  const [connectionStatuses, setConnectionStatuses] = useState({});
+  const [connectingId, setConnectingId] = useState(null);
+  const [connectionMessages, setConnectionMessages] = useState({});
+
   const fetchMatches = async (selectedCity = "") => {
     setLoading(true);
     setError("");
@@ -56,9 +60,54 @@ function Discover() {
     }
   };
 
+  const fetchConnectionStatuses = async () => {
+    try {
+      const [sent, received] = await Promise.all([
+        apiRequest("/api/connections/sent"),
+        apiRequest("/api/connections/received"),
+      ]);
+
+      const statuses = {};
+
+      const priority = {
+        rejected: 1,
+        pending: 2,
+        incoming: 3,
+        accepted: 4,
+      };
+
+      const addStatus = (userId, status) => {
+        const existing = statuses[userId];
+
+        if (
+          !existing ||
+          priority[status] > priority[existing]
+        ) {
+          statuses[userId] = status;
+        }
+      };
+
+      sent.forEach((request) => {
+        addStatus(request.user.id, request.status);
+      });
+
+      received.forEach((request) => {
+        addStatus(
+          request.user.id,
+          request.status === "pending" ? "incoming" : request.status
+        );
+      });
+
+      setConnectionStatuses(statuses);
+    } catch (err) {
+      console.error("Unable to load connection statuses:", err);
+    }
+  };
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       fetchMatches();
+      fetchConnectionStatuses();
     }, 0);
 
     return () => window.clearTimeout(timer);
@@ -68,6 +117,43 @@ function Discover() {
     event.preventDefault();
     setSearchCity(city.trim());
     fetchMatches(city);
+  };
+
+  const handleConnect = async (userId) => {
+    setConnectingId(userId);
+
+    setConnectionMessages((previous) => ({
+      ...previous,
+      [userId]: "",
+    }));
+
+    try {
+      await apiRequest("/api/connections/", {
+        method: "POST",
+        body: JSON.stringify({
+          receiver_id: userId,
+        }),
+      });
+
+      setConnectionStatuses((previous) => ({
+        ...previous,
+        [userId]: "pending",
+      }));
+
+      setConnectionMessages((previous) => ({
+        ...previous,
+        [userId]: "Connection request sent successfully!",
+      }));
+    } catch (err) {
+      setConnectionMessages((previous) => ({
+        ...previous,
+        [userId]: err.message || "Unable to send connection request.",
+      }));
+
+      await fetchConnectionStatuses();
+    } finally {
+      setConnectingId(null);
+    }
   };
 
   const updateFilter = (key, value) => {
@@ -152,6 +238,49 @@ function Discover() {
     filters.budgetMin,
     filters.budgetMax,
   ].filter((value) => value !== "").length;
+
+  const renderConnectionButton = (userId) => {
+    const status = connectionStatuses[userId];
+    const isConnecting = connectingId === userId;
+
+    if (status === "accepted") {
+      return (
+        <button className="quick-connect-button connected" disabled>
+          ✓ Connected
+        </button>
+      );
+    }
+
+    if (status === "pending") {
+      return (
+        <button className="quick-connect-button pending" disabled>
+          ◷ Request Pending
+        </button>
+      );
+    }
+
+    if (status === "incoming") {
+      return (
+        <Link to="/connections" className="quick-connect-button incoming">
+          Respond in Connections →
+        </Link>
+      );
+    }
+
+    return (
+      <button
+        className="quick-connect-button"
+        onClick={() => handleConnect(userId)}
+        disabled={isConnecting}
+      >
+        {isConnecting
+          ? "Sending..."
+          : status === "rejected"
+            ? "↻ Connect Again"
+            : "+ Quick Connect"}
+      </button>
+    );
+  };
 
   return (
     <div className="discover-page">
@@ -326,6 +455,7 @@ function Discover() {
                       filteredMatches.length === 1 ? "" : "s"
                     } Found`}
               </h2>
+
               {!loading && matches.length !== filteredMatches.length && (
                 <p className="filter-result-count">
                   Showing {filteredMatches.length} of {totalMatches} matches
@@ -363,6 +493,7 @@ function Discover() {
                 We couldn't find compatible roommates in this search.
                 Try another city or check back as more people join NIVORA.
               </p>
+
               {searchCity && (
                 <button
                   className="discover-action"
@@ -499,6 +630,16 @@ function Discover() {
                       </div>
                     </div>
                   )}
+
+                  <div className="quick-connect-section">
+                    {renderConnectionButton(match.user_id)}
+
+                    {connectionMessages[match.user_id] && (
+                      <p className="quick-connect-message">
+                        {connectionMessages[match.user_id]}
+                      </p>
+                    )}
+                  </div>
 
                   <Link
                     to={`/roommates/${match.user_id}`}

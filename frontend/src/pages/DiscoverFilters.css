@@ -145,3 +145,66 @@
     justify-content: center;
   }
 }
+/* Quick Connect */
+.quick-connect-section {
+  margin: 20px 0 12px;
+}
+
+.quick-connect-button {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border: 1px solid #183d35;
+  border-radius: 10px;
+  background: #183d35;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-connect-button:hover:not(:disabled) {
+  background: #285b4e;
+  border-color: #285b4e;
+}
+
+.quick-connect-button:disabled {
+  cursor: default;
+}
+
+.quick-connect-button.pending {
+  background: #f5f3e9;
+  border-color: #e6dfbd;
+  color: #81703b;
+}
+
+.quick-connect-button.connected {
+  background: #eaf3ec;
+  border-color: #c9dfce;
+  color: #39704b;
+}
+
+.quick-connect-button.incoming {
+  background: #eef3f8;
+  border-color: #d5e1ed;
+  color: #365d7c;
+}
+
+.quick-connect-button.incoming:hover {
+  background: #e0eaf3;
+  border-color: #b9cede;
+}
+
+.quick-connect-message {
+  margin: 9px 0 0;
+  color: #547563;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
