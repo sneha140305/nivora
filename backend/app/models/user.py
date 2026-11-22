@@ -19,6 +19,14 @@ class User(Base):
 
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 
+    profile_photo_url: Mapped[str | None] = mapped_column(
+        String(500), nullable=True
+    )
+
+    profile_photo_public_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )
+
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(

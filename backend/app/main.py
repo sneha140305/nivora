@@ -10,9 +10,11 @@ from app.api.matching import router as matching_router
 from app.api.connections import router as connections_router
 from app.api.messages import router as messages_router
 from app.api.notifications import router as notifications_router
+from app.database.migrations import migrate_profile_photo_columns
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+migrate_profile_photo_columns()
 
 app = FastAPI(
     title="NIVORA API",

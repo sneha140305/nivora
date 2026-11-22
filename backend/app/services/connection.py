@@ -172,6 +172,7 @@ def get_connection_requests(
             LifestyleProfile.city,
             LifestyleProfile.occupation,
             LifestyleProfile.bio,
+            User.profile_photo_url,
         )
         .join(User, User.id == other_user_id)
         .outerjoin(
@@ -185,7 +186,7 @@ def get_connection_requests(
 
     requests = []
 
-    for connection, user, city, occupation, bio in results:
+    for connection, user, city, occupation, bio, profile_photo_url in results:
         requests.append(
             {
                 "id": connection.id,
@@ -197,6 +198,7 @@ def get_connection_requests(
                     "city": city,
                     "occupation": occupation,
                     "bio": bio,
+                    "profile_photo_url": profile_photo_url,
                 },
             }
         )

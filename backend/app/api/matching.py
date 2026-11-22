@@ -84,6 +84,7 @@ def discover_roommates(
             RoommateMatch(
                 user_id=candidate_user.id,
                 full_name=candidate_user.full_name,
+                profile_photo_url=candidate_user.profile_photo_url,
                 city=candidate_profile.city,
                 occupation=candidate_profile.occupation,
                 bio=candidate_profile.bio,
@@ -171,6 +172,7 @@ def get_roommate_details(
     return RoommateDetailResponse(
         user_id=roommate.id,
         full_name=roommate.full_name,
+        profile_photo_url=roommate.profile_photo_url,
         city=profile.city,
         occupation=profile.occupation,
         bio=profile.bio,

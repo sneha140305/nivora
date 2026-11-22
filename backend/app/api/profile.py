@@ -1,18 +1,25 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_current_user
 from app.database.session import get_db
 from app.models.user import User
+
 from app.schemas.profile import (
     LifestyleProfileCreate,
     LifestyleProfileResponse,
     LifestyleProfileUpdate,
 )
+
 from app.services.profile import (
     create_profile,
     get_profile,
     update_profile,
+)
+
+from app.services.profile_photo import (
+    upload_profile_photo,
+    delete_cloudinary_photo,
 )
 
 router = APIRouter(prefix="/api/profile", tags=["Lifestyle Profile"])
@@ -68,3 +75,59 @@ def edit_lifestyle_profile(
         )
 
     return profile
+
+
+@router.post("/photo")
+async def upload_user_profile_photo(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    upload_result = await upload_profile_photo(file)
+
+    old_public_id = current_user.profile_photo_public_id
+
+    current_user.profile_photo_url = upload_result["url"]
+    current_user.profile_photo_public_id = upload_result["public_id"]
+
+    try:
+        db.commit()
+        db.refresh(current_user)
+    except Exception:
+        db.rollback()
+        delete_cloudinary_photo(upload_result["public_id"])
+        raise
+
+    if old_public_id:
+        try:
+            delete_cloudinary_photo(old_public_id)
+        except Exception:
+            pass
+
+    return {
+        "message": "Profile photo uploaded successfully.",
+        "profile_photo_url": current_user.profile_photo_url,
+    }
+
+@router.delete("/photo")
+def remove_user_profile_photo(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    old_public_id = current_user.profile_photo_public_id
+
+    current_user.profile_photo_url = None
+    current_user.profile_photo_public_id = None
+
+    db.commit()
+    db.refresh(current_user)
+
+    if old_public_id:
+        try:
+            delete_cloudinary_photo(old_public_id)
+        except Exception:
+            pass
+
+    return {
+        "message": "Profile photo removed successfully."
+    }

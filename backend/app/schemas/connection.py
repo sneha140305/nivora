@@ -28,6 +28,7 @@ class ConnectionRequestUserResponse(BaseModel):
     city: str | None = None
     occupation: str | None = None
     bio: str | None = None
+    profile_photo_url: str | None = None
 
 
 class ConnectionRequestDetailResponse(BaseModel):

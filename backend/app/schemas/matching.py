@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class RoommateMatch(BaseModel):
     user_id: int
     full_name: str
-
+    profile_photo_url: str | None = None
     city: str | None = None
     occupation: str | None = None
     bio: str | None = None

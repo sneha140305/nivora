@@ -17,7 +17,7 @@ class UserResponse(BaseModel):
     full_name: str
     email: EmailStr
     is_active: bool
-
+    profile_photo_url: str | None = None
     model_config = ConfigDict(from_attributes=True)
 
 

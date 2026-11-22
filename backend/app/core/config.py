@@ -10,7 +10,13 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.getenv("NIVORA_SECRET_KEY")
 
 if not SECRET_KEY or len(SECRET_KEY.encode()) < 32:
-    raise RuntimeError("A secure NIVORA_SECRET_KEY of at least 32 bytes is required")
+    raise RuntimeError(
+        "A secure NIVORA_SECRET_KEY of at least 32 bytes is required"
+    )
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
+CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
