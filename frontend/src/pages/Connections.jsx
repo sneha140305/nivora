@@ -237,7 +237,21 @@ function Connections() {
               <article className="connection-card" key={request.id}>
                 <div className="connection-card-top">
                   <div className="connection-avatar">
-                    {request.user?.full_name?.charAt(0)?.toUpperCase() || "?"}
+                    {request.user?.profile_photo_url ? (
+                      <img
+                        src={request.user.profile_photo_url}
+                        alt={`${request.user.full_name || "User"}'s profile`}
+                      />
+                    ) : (
+                      <span>
+                        {(request.user?.full_name || "N")
+                          .split(" ")
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map((part) => part[0].toUpperCase())
+                          .join("")}
+                        </span>
+                    )}
                   </div>
 
                   <span className={`connection-status ${request.status}`}>
