@@ -535,7 +535,21 @@ function Discover() {
                 <article className="roommate-card" key={match.user_id}>
                   <div className="roommate-card-top">
                     <div className="roommate-avatar">
-                      {match.full_name?.charAt(0)?.toUpperCase() || "R"}
+                      {match.profile_photo_url ? (
+                        <img
+                          src={match.profile_photo_url}
+                          alt={`${match.full_name}'s profile`}
+                        />
+                      ) : (
+                        <span>
+                          {(match.full_name || "Roommate")
+                            .split(" ")
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map((part) => part[0].toUpperCase())
+                            .join("")}
+                        </span>
+                      )}
                     </div>
 
                     <div className="roommate-identity">
