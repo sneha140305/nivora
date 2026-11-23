@@ -154,7 +154,21 @@ function RoommateDetails() {
         <section className="details-profile-card">
           <div className="details-profile-top">
             <div className="details-avatar">
-              {roommate.full_name?.charAt(0)?.toUpperCase() || "R"}
+              {roommate.profile_photo_url ? (
+                <img
+                  src={roommate.profile_photo_url}
+                  alt={`${roommate.full_name}'s profile`}
+                />
+              ) : (
+                <span>
+                  {(roommate.full_name || "Roommate")
+                    .split(" ")
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((part) => part[0].toUpperCase())
+                    .join("")}
+                </span>
+              )}
             </div>
 
             <div className="details-identity">
