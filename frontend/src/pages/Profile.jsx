@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -9,8 +9,10 @@ import {
   Heart,
   LoaderCircle,
   CheckCircle,
+  Camera,
+  Trash2,
 } from "lucide-react";
-
+import { useAuth } from "../context/useAuth";
 import { apiRequest } from "../services/api";
 import "./Profile.css";
 
@@ -33,7 +35,10 @@ const initialForm = {
 
 function Profile() {
   const navigate = useNavigate();
+  const { user, setUser } = useAuth();
+  const photoInputRef = useRef(null);
 
+  const [photoUploading, setPhotoUploading] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [hasProfile, setHasProfile] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -91,6 +96,73 @@ function Profile() {
 
     setError("");
     setSuccess("");
+  };
+
+  const handlePhotoChange = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Please select a JPG, PNG, or WEBP image.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image size must not exceed 5 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setPhotoUploading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await apiRequest("/api/profile/photo", {
+        method: "POST",
+        body: formData,
+      });
+
+      setUser((previous) => ({
+        ...previous,
+        profile_photo_url: response.profile_photo_url,
+      }));
+
+      setSuccess("Profile photo updated successfully!");
+    } catch (err) {
+      setError(err.message || "Unable to upload profile photo.");
+    } finally {
+      setPhotoUploading(false);
+      event.target.value = "";
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    setPhotoUploading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      await apiRequest("/api/profile/photo", {
+        method: "DELETE",
+      });
+
+      setUser((previous) => ({
+        ...previous,
+        profile_photo_url: null,
+      }));
+
+      setSuccess("Profile photo removed successfully!");
+    } catch (err) {
+      setError(err.message || "Unable to remove profile photo.");
+    } finally {
+      setPhotoUploading(false);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -151,7 +223,12 @@ function Profile() {
     );
   }
 
-  const renderSelect = (name, label, options, placeholder = "Select an option") => (
+  const renderSelect = (
+    name,
+    label,
+    options,
+    placeholder = "Select an option"
+  ) => (
     <div className="profile-field">
       <label htmlFor={name}>{label}</label>
       <select
@@ -206,12 +283,79 @@ function Profile() {
         )}
 
         <form className="profile-form" onSubmit={handleSubmit}>
+          {/* Basic Information */}
           <section className="profile-form-section">
             <div className="profile-section-title">
               <UserRound size={21} />
               <div>
                 <h2>Basic information</h2>
                 <p>A little introduction about yourself.</p>
+              </div>
+            </div>
+
+            {/* Profile Photo */}
+            <div className="profile-photo-section">
+              <div className="profile-photo-preview">
+                {user?.profile_photo_url ? (
+                  <img
+                    src={user.profile_photo_url}
+                    alt="Your profile"
+                  />
+                ) : (
+                  <span>
+                    {(user?.full_name || "User")
+                      .split(" ")
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .map((part) => part[0].toUpperCase())
+                      .join("")}
+                  </span>
+                )}
+              </div>
+
+              <div className="profile-photo-info">
+                <h3>Profile photo</h3>
+                <p>Help your potential roommates recognize you.</p>
+                <small>JPG, PNG or WEBP · Maximum 5 MB</small>
+
+                <div className="profile-photo-actions">
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handlePhotoChange}
+                    hidden
+                  />
+
+                  <button
+                    type="button"
+                    className="profile-photo-upload"
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={photoUploading}
+                  >
+                    {photoUploading ? (
+                      <LoaderCircle
+                        size={16}
+                        className="profile-spinner"
+                      />
+                    ) : (
+                      <Camera size={16} />
+                    )}
+                    {photoUploading ? "Uploading..." : "Upload photo"}
+                  </button>
+
+                  {user?.profile_photo_url && (
+                    <button
+                      type="button"
+                      className="profile-photo-remove"
+                      onClick={handleRemovePhoto}
+                      disabled={photoUploading}
+                    >
+                      <Trash2 size={15} />
+                      Remove
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -230,7 +374,10 @@ function Profile() {
 
               {renderSelect("occupation", "Occupation", [
                 { value: "student", label: "Student" },
-                { value: "working_professional", label: "Working professional" },
+                {
+                  value: "working_professional",
+                  label: "Working professional",
+                },
                 { value: "freelancer", label: "Freelancer" },
                 { value: "other", label: "Other" },
               ])}
@@ -251,6 +398,7 @@ function Profile() {
             </div>
           </section>
 
+          {/* Monthly Budget */}
           <section className="profile-form-section">
             <div className="profile-section-title">
               <Wallet size={21} />
@@ -289,6 +437,7 @@ function Profile() {
             </div>
           </section>
 
+          {/* Daily Routine */}
           <section className="profile-form-section">
             <div className="profile-section-title">
               <Clock size={21} />
@@ -331,6 +480,7 @@ function Profile() {
             </div>
           </section>
 
+          {/* Lifestyle Preferences */}
           <section className="profile-form-section">
             <div className="profile-section-title">
               <Heart size={21} />
@@ -367,11 +517,15 @@ function Profile() {
                 { value: "extrovert", label: "Extrovert" },
               ])}
 
-              {renderSelect("guest_frequency", "How often do you host guests?", [
-                { value: "rarely", label: "Rarely" },
-                { value: "sometimes", label: "Sometimes" },
-                { value: "frequently", label: "Frequently" },
-              ])}
+              {renderSelect(
+                "guest_frequency",
+                "How often do you host guests?",
+                [
+                  { value: "rarely", label: "Rarely" },
+                  { value: "sometimes", label: "Sometimes" },
+                  { value: "frequently", label: "Frequently" },
+                ]
+              )}
 
               {renderSelect("pets_allowed", "Are pets allowed?", [
                 { value: "true", label: "Yes" },
@@ -380,8 +534,11 @@ function Profile() {
             </div>
           </section>
 
+          {/* Save Profile */}
           <div className="profile-submit-area">
-            <p>You can update your preferences whenever your lifestyle changes.</p>
+            <p>
+              You can update your preferences whenever your lifestyle changes.
+            </p>
 
             <button
               type="submit"
