@@ -132,7 +132,14 @@ function Messages() {
                 }
               >
                 <div className="conversation-avatar">
-                  {conversation.full_name?.charAt(0)?.toUpperCase() || "?"}
+                  {conversation.profile_photo_url ? (
+                    <img
+                      src={conversation.profile_photo_url}
+                      alt={conversation.full_name}
+                    />
+                  ) : (
+                    conversation.full_name?.charAt(0)?.toUpperCase() || "?"
+                  )}
                 </div>
 
                 <div className="conversation-details">

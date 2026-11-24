@@ -25,6 +25,7 @@ class MessageResponse(BaseModel):
 class ConversationResponse(BaseModel):
     user_id: int
     full_name: str
+    profile_photo_url: str | None = None
     last_message: str
     last_message_at: datetime
     unread_count: int

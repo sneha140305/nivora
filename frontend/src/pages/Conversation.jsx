@@ -18,6 +18,7 @@ function Conversation() {
   const { user } = useAuth();
 
   const [roommateName, setRoommateName] = useState("Your Roommate");
+  const [roommatePhotoUrl, setRoommatePhotoUrl] = useState("");
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
@@ -52,6 +53,7 @@ function Conversation() {
 
         if (isMounted) {
           setRoommateName(data.full_name || "Your Roommate");
+          setRoommatePhotoUrl(data.profile_photo_url || "");
         }
       } catch {
         if (isMounted) {
@@ -135,9 +137,16 @@ function Conversation() {
           <ArrowLeft size={19} />
         </Link>
 
-        <div className="conversation-user-avatar">
-          {roommateName.charAt(0).toUpperCase()}
-        </div>
+       <div className="conversation-user-avatar">
+        {roommatePhotoUrl ? (
+          <img
+            src={roommatePhotoUrl}
+            alt={roommateName}
+          />
+        ) : (
+          roommateName.charAt(0).toUpperCase()
+        )}
+      </div>
 
         <div className="conversation-user-info">
           <h2>{roommateName}</h2>

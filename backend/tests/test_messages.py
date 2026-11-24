@@ -141,6 +141,8 @@ def test_conversations_show_unread_messages(client):
     assert conversations.status_code == 200
     assert len(conversations.json()) == 1
     assert conversations.json()[0]["full_name"] == "Sender"
+    assert "profile_photo_url" in conversations.json()[0]
+    assert conversations.json()[0]["profile_photo_url"] is None
     assert conversations.json()[0]["last_message"] == "First message"
     assert conversations.json()[0]["unread_count"] == 1
 

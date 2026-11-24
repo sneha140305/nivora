@@ -173,6 +173,7 @@ def get_conversations(
             ConversationResponse(
                 user_id=user_id,
                 full_name=other_user.full_name,
+                profile_photo_url=other_user.profile_photo_url,
                 last_message=last_message.content,
                 last_message_at=last_message.created_at,
                 unread_count=unread_count or 0,
