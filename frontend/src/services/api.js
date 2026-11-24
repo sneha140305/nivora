@@ -4,8 +4,10 @@ const API_BASE_URL =
 export async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem("nivora_token");
 
+  const isFormData = options.body instanceof FormData;
+
   const headers = {
-    "Content-Type": "application/json",
+    ...(!isFormData ? { "Content-Type": "application/json" } : {}),
     ...options.headers,
   };
 
