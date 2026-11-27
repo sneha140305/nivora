@@ -3,10 +3,15 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_current_user
-from app.core.security import create_access_token
+from app.core.security import (
+    create_access_token,
+    hash_password,
+    verify_password,
+)
 from app.database.session import get_db
 from app.models.user import User
 from app.schemas.auth import (
+    ChangePasswordRequest,
     TokenResponse,
     UserLogin,
     UserRegister,
@@ -75,6 +80,7 @@ def get_me(
 ):
     return current_user
 
+
 @router.put("/me", response_model=UserResponse)
 def update_me(
     user_data: UserUpdate,
@@ -112,3 +118,39 @@ def update_me(
         ) from exc
 
     return current_user
+
+
+@router.put("/change-password", status_code=status.HTTP_200_OK)
+def change_password(
+    password_data: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    # Verify current password
+    if not verify_password(
+        password_data.current_password,
+        current_user.hashed_password,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    # Prevent reusing the current password
+    if verify_password(
+        password_data.new_password,
+        current_user.hashed_password,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from current password",
+        )
+
+    # Hash and save new password
+    current_user.hashed_password = hash_password(
+        password_data.new_password
+    )
+
+    db.commit()
+
+    return {"message": "Password changed successfully"}

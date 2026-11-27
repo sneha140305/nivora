@@ -14,6 +14,7 @@ import {
   Pencil,
   X,
   Mail,
+  LockKeyhole,
 } from "lucide-react";
 import { useAuth } from "../context/useAuth";
 import { apiRequest } from "../services/api";
@@ -49,8 +50,15 @@ function Profile() {
     email: user?.email || "",
   });
 
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: "",
+    new_password: "",
+    confirm_password: "",
+  });
+
   const [editingAccount, setEditingAccount] = useState(false);
   const [accountSaving, setAccountSaving] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
 
   const [hasProfile, setHasProfile] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -182,6 +190,58 @@ function Profile() {
     setEditingAccount(false);
     setError("");
     setSuccess("");
+  };
+
+  // Change account password.
+  const handlePasswordSubmit = async (event) => {
+    event.preventDefault();
+
+    setError("");
+    setSuccess("");
+
+    const { current_password, new_password, confirm_password } =
+      passwordForm;
+
+    if (new_password.length < 8 || new_password.length > 128) {
+      setError("New password must contain between 8 and 128 characters.");
+      return;
+    }
+
+    if (new_password !== confirm_password) {
+      setError("New password and confirmation do not match.");
+      return;
+    }
+
+    if (current_password === new_password) {
+      setError(
+        "New password must be different from your current password."
+      );
+      return;
+    }
+
+    setPasswordSaving(true);
+
+    try {
+      const response = await apiRequest("/api/auth/change-password", {
+        method: "PUT",
+        body: JSON.stringify({
+          current_password,
+          new_password,
+        }),
+      });
+
+      setPasswordForm({
+        current_password: "",
+        new_password: "",
+        confirm_password: "",
+      });
+
+      setSuccess(response.message || "Password changed successfully!");
+    } catch (err) {
+      setError(err.message || "Unable to change your password.");
+    } finally {
+      setPasswordSaving(false);
+    }
   };
 
   // Upload profile photo.
@@ -358,8 +418,8 @@ function Profile() {
           <span>GET TO KNOW YOU</span>
           <h1>{hasProfile ? "Your lifestyle profile" : "Create your profile"}</h1>
           <p>
-            Tell us about your lifestyle, habits and preferences.
-            We'll use them to find roommates who match your rhythm.
+            Tell us about your lifestyle, habits and preferences. We'll use
+            them to find roommates who match your rhythm.
           </p>
         </div>
 
@@ -493,6 +553,105 @@ function Profile() {
           </form>
         </section>
 
+        {/* Security & Password */}
+        <section className="profile-form-section account-info-section">
+          <div className="profile-section-title">
+            <LockKeyhole size={21} />
+            <div>
+              <h2>Security & password</h2>
+              <p>Keep your NIVORA account secure.</p>
+            </div>
+          </div>
+
+          <form onSubmit={handlePasswordSubmit}>
+            <div className="profile-form-grid">
+              <div className="profile-field full-width">
+                <label htmlFor="current_password">Current password</label>
+                <input
+                  id="current_password"
+                  type="password"
+                  value={passwordForm.current_password}
+                  onChange={(event) =>
+                    setPasswordForm((previous) => ({
+                      ...previous,
+                      current_password: event.target.value,
+                    }))
+                  }
+                  placeholder="Enter your current password"
+                  maxLength={128}
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+
+              <div className="profile-field">
+                <label htmlFor="new_password">New password</label>
+                <input
+                  id="new_password"
+                  type="password"
+                  value={passwordForm.new_password}
+                  onChange={(event) =>
+                    setPasswordForm((previous) => ({
+                      ...previous,
+                      new_password: event.target.value,
+                    }))
+                  }
+                  placeholder="At least 8 characters"
+                  minLength={8}
+                  maxLength={128}
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+
+              <div className="profile-field">
+                <label htmlFor="confirm_password">
+                  Confirm new password
+                </label>
+                <input
+                  id="confirm_password"
+                  type="password"
+                  value={passwordForm.confirm_password}
+                  onChange={(event) =>
+                    setPasswordForm((previous) => ({
+                      ...previous,
+                      confirm_password: event.target.value,
+                    }))
+                  }
+                  placeholder="Re-enter your new password"
+                  minLength={8}
+                  maxLength={128}
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="profile-account-actions">
+              <button
+                type="submit"
+                className="profile-save-button"
+                disabled={passwordSaving}
+              >
+                {passwordSaving ? (
+                  <>
+                    <LoaderCircle
+                      className="profile-spinner"
+                      size={18}
+                    />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <LockKeyhole size={17} />
+                    Change password
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </section>
+
         {/* Lifestyle Profile Form */}
         <form className="profile-form" onSubmit={handleSubmit}>
           {/* Basic Information */}
@@ -509,10 +668,7 @@ function Profile() {
             <div className="profile-photo-section">
               <div className="profile-photo-preview">
                 {user?.profile_photo_url ? (
-                  <img
-                    src={user.profile_photo_url}
-                    alt="Your profile"
-                  />
+                  <img src={user.profile_photo_url} alt="Your profile" />
                 ) : (
                   <span>
                     {(user?.full_name || "User")

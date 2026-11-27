@@ -212,3 +212,103 @@ def test_update_account_rejects_invalid_data(client):
     )
 
     assert response.status_code == 422
+def test_change_password_successfully(client):
+    token = create_authenticated_user(
+        client, "Password User", "passwordchange@example.com"
+    )
+
+    response = client.put(
+        "/api/auth/change-password",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "current_password": "NivoraTest@123",
+            "new_password": "NewNivora@456",
+        },
+    )
+
+    assert response.status_code == 200
+
+    old_login = client.post(
+        "/api/auth/login",
+        json={
+            "email": "passwordchange@example.com",
+            "password": "NivoraTest@123",
+        },
+    )
+    assert old_login.status_code == 401
+
+    new_login = client.post(
+        "/api/auth/login",
+        json={
+            "email": "passwordchange@example.com",
+            "password": "NewNivora@456",
+        },
+    )
+    assert new_login.status_code == 200
+
+
+def test_change_password_incorrect_current_password(client):
+    token = create_authenticated_user(
+        client, "Password User", "incorrectcurrent@example.com"
+    )
+
+    response = client.put(
+        "/api/auth/change-password",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "current_password": "WrongPassword@123",
+            "new_password": "NewNivora@456",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Current password is incorrect"
+
+
+def test_change_password_requires_authentication(client):
+    response = client.put(
+        "/api/auth/change-password",
+        json={
+            "current_password": "NivoraTest@123",
+            "new_password": "NewNivora@456",
+        },
+    )
+
+    assert response.status_code == 401
+
+
+def test_change_password_rejects_short_password(client):
+    token = create_authenticated_user(
+        client, "Password User", "shortpassword@example.com"
+    )
+
+    response = client.put(
+        "/api/auth/change-password",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "current_password": "NivoraTest@123",
+            "new_password": "short",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_change_password_rejects_same_password(client):
+    token = create_authenticated_user(
+        client, "Password User", "samepassword@example.com"
+    )
+
+    response = client.put(
+        "/api/auth/change-password",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "current_password": "NivoraTest@123",
+            "new_password": "NivoraTest@123",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == (
+        "New password must be different from current password"
+    )
