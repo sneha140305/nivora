@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { apiRequest } from "../services/api";
 import "./RoommateDetails.css";
 
@@ -60,7 +60,10 @@ function RoommateDetails() {
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
   const [requestMessage, setRequestMessage] = useState("");
-
+  const navigate = useNavigate();
+  const [blocking, setBlocking] = useState(false);
+  const [blockMessage, setBlockMessage] = useState("");
+  
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -99,6 +102,33 @@ function RoommateDetails() {
     }
   };
 
+  const handleBlockUser = async () => {
+    const confirmed = window.confirm(
+      `Are you sure you want to block ${roommate.full_name}? They won't be able to find your profile, connect with you, or message you.`
+    );
+
+    if (!confirmed) return;
+
+    setBlocking(true);
+    setBlockMessage("");
+
+    try {
+      await apiRequest(`/api/safety/block/${userId}`, {
+        method: "POST",
+      });
+
+      setBlockMessage("User blocked successfully.");
+
+      setTimeout(() => {
+        navigate("/discover");
+      }, 1000);
+    } catch (err) {
+      setBlockMessage(err.message || "Unable to block this user.");
+    } finally {
+      setBlocking(false);
+    }
+  };
+ 
   if (loading) {
     return (
       <div className="roommate-details-page">
@@ -200,6 +230,20 @@ function RoommateDetails() {
                 ? `₹${roommate.budget_min.toLocaleString("en-IN")} – ₹${roommate.budget_max.toLocaleString("en-IN")}`
                 : "Not specified"}
             </strong>
+          </div>
+          <div className="details-safety-actions">
+            <button
+              type="button"
+              className="details-block-button"
+              onClick={handleBlockUser}
+              disabled={blocking}
+            >
+              {blocking ? "Blocking..." : "Block User"}
+            </button>
+
+            {blockMessage && (
+              <p className="safety-feedback">{blockMessage}</p>
+            )}
           </div>
         </section>
 
