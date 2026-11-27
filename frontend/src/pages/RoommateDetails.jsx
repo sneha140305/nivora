@@ -63,6 +63,11 @@ function RoommateDetails() {
   const navigate = useNavigate();
   const [blocking, setBlocking] = useState(false);
   const [blockMessage, setBlockMessage] = useState("");
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reporting, setReporting] = useState(false);
+  const [reportMessage, setReportMessage] = useState("");
   
   useEffect(() => {
     const fetchDetails = async () => {
@@ -154,6 +159,37 @@ function RoommateDetails() {
     );
   }
 
+  const handleReportUser = async (event) => {
+    event.preventDefault();
+
+    if (!reportReason) {
+      setReportMessage("Please select a reason for reporting.");
+      return;
+    }
+
+    setReporting(true);
+    setReportMessage("");
+
+    try {
+      await apiRequest(`/api/safety/report/${userId}`, {
+        method: "POST",
+        body: JSON.stringify({
+          reason: reportReason,
+          description: reportDescription.trim() || null,
+        }),
+      });
+
+      setReportMessage("Report submitted successfully. Thank you for helping keep NIVORA safe.");
+      setReportReason("");
+      setReportDescription("");
+      setShowReportForm(false);
+    } catch (err) {
+      setReportMessage(err.message || "Unable to submit your report.");
+    } finally {
+      setReporting(false);
+    }
+  };
+
   const lifestyleItems = [
     ["Sleep Time", roommate.sleep_time],
     ["Wake Time", roommate.wake_time],
@@ -240,6 +276,58 @@ function RoommateDetails() {
             >
               {blocking ? "Blocking..." : "Block User"}
             </button>
+            <button
+              type="button"
+              className="details-report-button"
+              onClick={() => {
+                setShowReportForm((previous) => !previous);
+                setReportMessage("");
+              }}
+            >
+              {showReportForm ? "Cancel Report" : "Report User"}
+            </button>
+
+            {showReportForm && (
+              <form className="details-report-form" onSubmit={handleReportUser}>
+                <h3>Report this profile</h3>
+
+                <label htmlFor="report-reason">Reason for reporting</label>
+                <select
+                  id="report-reason"
+                  value={reportReason}
+                  onChange={(event) => setReportReason(event.target.value)}
+                  required
+                >
+                  <option value="">Select a reason</option>
+                  <option value="inappropriate_behavior">Inappropriate Behavior</option>
+                  <option value="fake_profile">Fake Profile</option>
+                  <option value="harassment">Harassment</option>
+                  <option value="spam">Spam</option>
+                  <option value="safety_concern">Safety Concern</option>
+                  <option value="other">Other</option>
+                </select>
+
+                <label htmlFor="report-description">
+                  Additional details (optional)
+                </label>
+                <textarea
+                  id="report-description"
+                  value={reportDescription}
+                  onChange={(event) => setReportDescription(event.target.value)}
+                  placeholder="Tell us more about the issue..."
+                  rows={4}
+                  maxLength={1000}
+                />
+
+                <button type="submit" disabled={reporting}>
+                  {reporting ? "Submitting..." : "Submit Report"}
+                </button>
+              </form>
+            )}
+
+            {reportMessage && (
+              <p className="safety-feedback">{reportMessage}</p>
+            )}
 
             {blockMessage && (
               <p className="safety-feedback">{blockMessage}</p>
