@@ -11,6 +11,9 @@ import {
   CheckCircle,
   Camera,
   Trash2,
+  Pencil,
+  X,
+  Mail,
 } from "lucide-react";
 import { useAuth } from "../context/useAuth";
 import { apiRequest } from "../services/api";
@@ -40,12 +43,22 @@ function Profile() {
 
   const [photoUploading, setPhotoUploading] = useState(false);
   const [form, setForm] = useState(initialForm);
+
+  const [accountForm, setAccountForm] = useState({
+    full_name: user?.full_name || "",
+    email: user?.email || "",
+  });
+
+  const [editingAccount, setEditingAccount] = useState(false);
+  const [accountSaving, setAccountSaving] = useState(false);
+
   const [hasProfile, setHasProfile] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Fetch lifestyle profile.
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -86,6 +99,7 @@ function Profile() {
     fetchProfile();
   }, []);
 
+  // Lifestyle form handler.
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -98,6 +112,79 @@ function Profile() {
     setSuccess("");
   };
 
+  // Account form handler.
+  const handleAccountChange = (event) => {
+    const { name, value } = event.target;
+
+    setAccountForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+
+    setError("");
+    setSuccess("");
+  };
+
+  // Save account details.
+  const handleAccountSubmit = async (event) => {
+    event.preventDefault();
+
+    setError("");
+    setSuccess("");
+
+    const fullName = accountForm.full_name.trim();
+    const email = accountForm.email.trim();
+
+    if (fullName.length < 2 || fullName.length > 100) {
+      setError("Name must contain between 2 and 100 characters.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    setAccountSaving(true);
+
+    try {
+      const updatedUser = await apiRequest("/api/auth/me", {
+        method: "PUT",
+        body: JSON.stringify({
+          full_name: fullName,
+          email: email.toLowerCase(),
+        }),
+      });
+
+      setUser(updatedUser);
+
+      setAccountForm({
+        full_name: updatedUser.full_name,
+        email: updatedUser.email,
+      });
+
+      setEditingAccount(false);
+      setSuccess("Account information updated successfully!");
+    } catch (err) {
+      setError(err.message || "Unable to update account information.");
+    } finally {
+      setAccountSaving(false);
+    }
+  };
+
+  // Cancel account editing.
+  const handleCancelAccountEdit = () => {
+    setAccountForm({
+      full_name: user?.full_name || "",
+      email: user?.email || "",
+    });
+
+    setEditingAccount(false);
+    setError("");
+    setSuccess("");
+  };
+
+  // Upload profile photo.
   const handlePhotoChange = async (event) => {
     const file = event.target.files?.[0];
 
@@ -142,6 +229,7 @@ function Profile() {
     }
   };
 
+  // Remove profile photo.
   const handleRemovePhoto = async () => {
     setPhotoUploading(true);
     setError("");
@@ -165,6 +253,7 @@ function Profile() {
     }
   };
 
+  // Save lifestyle profile.
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -214,15 +303,7 @@ function Profile() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="profile-loading">
-        <LoaderCircle className="profile-spinner" size={25} />
-        <p>Loading your profile...</p>
-      </div>
-    );
-  }
-
+  // Reusable dropdown renderer.
   const renderSelect = (
     name,
     label,
@@ -246,6 +327,15 @@ function Profile() {
       </select>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="profile-loading">
+        <LoaderCircle className="profile-spinner" size={25} />
+        <p>Loading your profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-page">
@@ -282,6 +372,128 @@ function Profile() {
           </div>
         )}
 
+        {/* Account Information */}
+        <section className="profile-form-section account-info-section">
+          <div className="profile-section-title">
+            <UserRound size={21} />
+            <div>
+              <h2>Account information</h2>
+              <p>Manage your name and email address.</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleAccountSubmit}>
+            {editingAccount ? (
+              <>
+                <div className="profile-form-grid">
+                  <div className="profile-field">
+                    <label htmlFor="account_full_name">Full name</label>
+                    <input
+                      id="account_full_name"
+                      name="full_name"
+                      type="text"
+                      value={accountForm.full_name}
+                      onChange={handleAccountChange}
+                      placeholder="Enter your full name"
+                      minLength={2}
+                      maxLength={100}
+                      required
+                    />
+                  </div>
+
+                  <div className="profile-field">
+                    <label htmlFor="account_email">Email address</label>
+                    <input
+                      id="account_email"
+                      name="email"
+                      type="email"
+                      value={accountForm.email}
+                      onChange={handleAccountChange}
+                      placeholder="Enter your email"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="profile-account-actions">
+                  <button
+                    type="submit"
+                    className="profile-save-button"
+                    disabled={accountSaving}
+                  >
+                    {accountSaving ? (
+                      <>
+                        <LoaderCircle
+                          className="profile-spinner"
+                          size={18}
+                        />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={18} />
+                        Save changes
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="profile-account-cancel"
+                    onClick={handleCancelAccountEdit}
+                    disabled={accountSaving}
+                  >
+                    <X size={17} />
+                    Cancel
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="profile-form-grid">
+                  <div className="profile-field">
+                    <label>Full name</label>
+                    <button
+                      type="button"
+                      className="profile-account-value profile-account-clickable"
+                      onClick={() => setEditingAccount(true)}
+                    >
+                      <UserRound size={17} />
+                      <span>{user?.full_name || "Not available"}</span>
+                      <Pencil size={15} />
+                    </button>
+                  </div>
+
+                  <div className="profile-field">
+                    <label>Email address</label>
+                    <button
+                      type="button"
+                      className="profile-account-value profile-account-clickable"
+                      onClick={() => setEditingAccount(true)}
+                    >
+                      <Mail size={17} />
+                      <span>{user?.email || "Not available"}</span>
+                      <Pencil size={15} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="profile-account-actions">
+                  <button
+                    type="button"
+                    className="profile-photo-upload"
+                    onClick={() => setEditingAccount(true)}
+                  >
+                    <Pencil size={16} />
+                    Edit account details
+                  </button>
+                </div>
+              </>
+            )}
+          </form>
+        </section>
+
+        {/* Lifestyle Profile Form */}
         <form className="profile-form" onSubmit={handleSubmit}>
           {/* Basic Information */}
           <section className="profile-form-section">
@@ -316,7 +528,7 @@ function Profile() {
               <div className="profile-photo-info">
                 <h3>Profile photo</h3>
                 <p>Help your potential roommates recognize you.</p>
-                <small>JPG, PNG or WEBP · Maximum 5 MB</small>
+                <small>JPG, PNG or WEBP - Maximum 5 MB</small>
 
                 <div className="profile-photo-actions">
                   <input
@@ -498,9 +710,9 @@ function Profile() {
               ])}
 
               {renderSelect("noise_tolerance", "Noise tolerance", [
-                { value: "low", label: "Low — prefer quiet" },
+                { value: "low", label: "Low - prefer quiet" },
                 { value: "medium", label: "Medium" },
-                { value: "high", label: "High — comfortable with noise" },
+                { value: "high", label: "High - comfortable with noise" },
               ])}
 
               {renderSelect("food_preference", "Food preference", [

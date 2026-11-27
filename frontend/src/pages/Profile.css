@@ -427,3 +427,87 @@
     font-size: 12px;
   }
 }
+/* Account Information */
+.account-info-section {
+  margin-bottom: 24px;
+}
+
+.profile-account-value {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 14px;
+}
+
+.profile-account-value svg {
+  flex-shrink: 0;
+  color: #7c3aed;
+}
+
+.profile-account-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.profile-account-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px 18px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.profile-account-cancel:hover {
+  background: #f3f4f6;
+}
+
+.profile-account-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .profile-account-actions {
+    align-items: stretch;
+  }
+
+  .profile-account-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+.profile-account-clickable {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.profile-account-clickable:hover {
+  background: #f7f9f7;
+  border-color: #e2e8e3;
+}
+
+.profile-account-clickable svg:last-child {
+  margin-left: auto;
+  opacity: 0.5;
+}

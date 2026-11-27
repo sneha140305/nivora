@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
-
+from pydantic import field_validator
 
 class UserRegister(BaseModel):
     full_name: str = Field(min_length=2, max_length=100)
@@ -24,3 +24,19 @@ class UserResponse(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+class UserUpdate(BaseModel):
+    full_name: str = Field(min_length=2, max_length=100)
+    email: EmailStr
+
+    @field_validator("full_name")
+    @classmethod
+    def validate_full_name(cls, value: str) -> str:
+        value = value.strip()
+
+        if len(value) < 2:
+            raise ValueError("Name must contain at least 2 characters")
+
+        return value
+
+

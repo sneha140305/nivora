@@ -11,6 +11,7 @@ from app.schemas.auth import (
     UserLogin,
     UserRegister,
     UserResponse,
+    UserUpdate,
 )
 from app.services.auth import authenticate_user, register_user
 
@@ -72,4 +73,42 @@ def login(
 def get_me(
     current_user: User = Depends(get_current_user),
 ):
+    return current_user
+
+@router.put("/me", response_model=UserResponse)
+def update_me(
+    user_data: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    normalized_email = str(user_data.email).lower()
+
+    existing_user = (
+        db.query(User)
+        .filter(
+            User.email == normalized_email,
+            User.id != current_user.id,
+        )
+        .first()
+    )
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists",
+        )
+
+    current_user.full_name = user_data.full_name
+    current_user.email = normalized_email
+
+    try:
+        db.commit()
+        db.refresh(current_user)
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists",
+        ) from exc
+
     return current_user
