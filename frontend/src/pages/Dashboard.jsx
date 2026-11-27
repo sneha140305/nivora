@@ -196,7 +196,14 @@ function Dashboard() {
             </button>
 
             <div className="dashboard-avatar">
-              {user?.full_name?.charAt(0)?.toUpperCase()}
+              {user?.profile_photo_url ? (
+                <img
+                  src={user.profile_photo_url}
+                  alt={user.full_name}
+                />
+              ) : (
+                user?.full_name?.charAt(0)?.toUpperCase()
+              )}
             </div>
           </div>
         </header>
