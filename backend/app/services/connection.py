@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -7,6 +7,7 @@ from app.models.connection import ConnectionRequest
 from app.models.profile import LifestyleProfile
 from app.models.user import User
 from app.services.notification import create_notification
+from app.services.safety import is_blocked
 
 
 def send_connection_request(
@@ -16,6 +17,11 @@ def send_connection_request(
 ):
     if sender_id == receiver_id:
         raise ValueError("You cannot send a connection request to yourself.")
+
+    if is_blocked(db, sender_id, receiver_id):
+        raise ValueError(
+            "You cannot send a connection request to this user."
+        )
 
     receiver = (
         db.query(User)
@@ -73,7 +79,7 @@ def send_connection_request(
             request.sender_id = sender_id
             request.receiver_id = receiver_id
             request.status = "pending"
-            request.created_at = datetime.now(timezone.utc)
+            request.created_at = datetime.now(UTC)
 
             create_notification(
                 db=db,

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import and_, desc, func, or_
@@ -13,6 +13,7 @@ from app.schemas.message import (
     MessageResponse,
 )
 from app.services.notification import create_notification
+from app.services.safety import is_blocked
 
 router = APIRouter(prefix="/api/messages", tags=["Messages"])
 
@@ -62,6 +63,12 @@ def send_message(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You cannot message yourself.",
+        )
+
+    if is_blocked(db, current_user.id, user_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Messaging is unavailable with this user.",
         )
 
     recipient = db.query(User).filter(User.id == user_id).first()
@@ -253,7 +260,7 @@ def mark_messages_as_read(
         .all()
     )
 
-    read_time = datetime.now(timezone.utc)
+    read_time = datetime.now(UTC)
 
     for message in unread_messages:
         message.read_at = read_time

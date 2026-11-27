@@ -4,15 +4,16 @@ from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_current_user
 from app.database.session import get_db
-from app.models.user import User
 from app.models.profile import LifestyleProfile
-from app.schemas.matching import MatchingResponse, RoommateMatch
-from app.services.matching import calculate_compatibility
+from app.models.user import User
+from app.models.user_block import UserBlock
 from app.schemas.matching import (
     MatchingResponse,
-    RoommateMatch,
     RoommateDetailResponse,
+    RoommateMatch,
 )
+from app.services.matching import calculate_compatibility
+from app.services.safety import is_blocked
 
 router = APIRouter(
     prefix="/api/matching",
@@ -48,6 +49,16 @@ def discover_roommates(
             detail="City cannot be empty.",
         )
 
+    blocked_user_ids = (
+        db.query(UserBlock.blocked_id)
+        .filter(UserBlock.blocker_id == current_user.id)
+        .union(
+            db.query(UserBlock.blocker_id).filter(
+                UserBlock.blocked_id == current_user.id
+            )
+        )
+    )
+
     # Find other active users who have completed lifestyle profiles
     query = (
         db.query(User, LifestyleProfile)
@@ -58,6 +69,7 @@ def discover_roommates(
         .filter(
             User.id != current_user.id,
             User.is_active.is_(True),
+            User.id.notin_(blocked_user_ids),
         )
     )
 
@@ -135,6 +147,12 @@ def get_roommate_details(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You cannot view yourself as a roommate match.",
+        )
+
+    if is_blocked(db, current_user.id, user_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Roommate not found.",
         )
 
     result = (
