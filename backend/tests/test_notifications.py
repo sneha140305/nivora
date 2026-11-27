@@ -1,3 +1,15 @@
+from conftest import TestingSessionLocal
+from app.models.user import User
+
+def set_user_profile_photo(user_id, photo_url):
+    db = TestingSessionLocal()
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        user.profile_photo_url = photo_url
+        db.commit()
+    finally:
+        db.close()
+
 def create_user(client, email, full_name="Test User"):
     registration = client.post(
         "/api/auth/register",
@@ -88,6 +100,7 @@ def test_connection_request_creates_notification(client):
     assert notification["actor_id"] != notification["user_id"]
     assert notification["title"] == "New Connection Request"
     assert notification["is_read"] is False
+    assert notification["actor_profile_photo_url"] is None
 
 
 def test_accepting_connection_creates_notification(client):
@@ -317,3 +330,33 @@ def test_users_cannot_access_other_users_notifications(client):
 
     assert unauthorized_read.status_code == 404
     assert unauthorized_delete.status_code == 404
+
+def test_notification_includes_actor_profile_photo(client):
+    sender_headers, sender_id = create_user(
+        client, "photo_sender@example.com", "Photo Sender"
+    )
+    receiver_headers, receiver_id = create_user(
+        client, "photo_receiver@example.com", "Photo Receiver"
+    )
+
+    photo_url = "https://example.com/profile-photo.jpg"
+    set_user_profile_photo(sender_id, photo_url)
+
+    response = client.post(
+        "/api/connections/",
+        headers=sender_headers,
+        json={"receiver_id": receiver_id},
+    )
+
+    assert response.status_code == 201
+
+    notifications = client.get(
+        "/api/notifications/",
+        headers=receiver_headers,
+    )
+
+    assert notifications.status_code == 200
+    assert len(notifications.json()) == 1
+    assert notifications.json()[0]["actor_profile_photo_url"] == photo_url
+
+

@@ -24,12 +24,24 @@ def get_notifications(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return (
-        db.query(Notification)
+    results = (
+        db.query(Notification, User.profile_photo_url)
+        .join(User, Notification.actor_id == User.id)
         .filter(Notification.user_id == current_user.id)
         .order_by(desc(Notification.created_at), desc(Notification.id))
         .all()
     )
+
+    return [
+        {
+            **{
+                column.name: getattr(notification, column.name)
+                for column in Notification.__table__.columns
+            },
+            "actor_profile_photo_url": profile_photo_url,
+        }
+        for notification, profile_photo_url in results
+    ]
 
 
 @router.get("/unread-count")

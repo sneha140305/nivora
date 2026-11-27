@@ -241,7 +241,15 @@ function Notifications() {
                     onClick={() => openNotification(notification)}
                   >
                     <div className="notification-icon">
-                      <Icon size={21} />
+                      {notification.actor_profile_photo_url ? (
+                        <img
+                          src={notification.actor_profile_photo_url}
+                          alt=""
+                          className="notification-avatar-image"
+                        />
+                      ) : (
+                        <Icon size={21} />
+                      )}
                     </div>
 
                     <div className="notification-details">

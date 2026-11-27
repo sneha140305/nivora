@@ -9,6 +9,7 @@ class NotificationResponse(BaseModel):
     id: int
     user_id: int
     actor_id: int
+    actor_profile_photo_url: str | None = None
     notification_type: str
     title: str
     message: str
