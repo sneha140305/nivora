@@ -66,7 +66,10 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(subject=str(user.id))
+    access_token = create_access_token(
+        subject=str(user.id),
+        token_version=user.token_version,
+    )
 
     return {
         "access_token": access_token,
@@ -150,6 +153,7 @@ def change_password(
     current_user.hashed_password = hash_password(
         password_data.new_password
     )
+    current_user.token_version += 1
 
     db.commit()
 

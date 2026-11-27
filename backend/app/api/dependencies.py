@@ -31,7 +31,11 @@ def get_current_user(
 
     user = db.query(User).filter(User.id == user_id).first()
 
-    if not user or not user.is_active:
+    if (
+        not user
+        or not user.is_active
+        or payload.get("token_version") != user.token_version
+    ):
         raise credentials_exception
 
     return user

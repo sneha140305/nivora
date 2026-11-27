@@ -216,10 +216,18 @@ def test_change_password_successfully(client):
     token = create_authenticated_user(
         client, "Password User", "passwordchange@example.com"
     )
+    old_headers = {"Authorization": f"Bearer {token}"}
+
+    # The original token should work before the password change.
+    before_change = client.get(
+        "/api/auth/me",
+        headers=old_headers,
+    )
+    assert before_change.status_code == 200
 
     response = client.put(
         "/api/auth/change-password",
-        headers={"Authorization": f"Bearer {token}"},
+        headers=old_headers,
         json={
             "current_password": "NivoraTest@123",
             "new_password": "NewNivora@456",
@@ -228,6 +236,7 @@ def test_change_password_successfully(client):
 
     assert response.status_code == 200
 
+    # The old password must no longer work.
     old_login = client.post(
         "/api/auth/login",
         json={
@@ -237,6 +246,14 @@ def test_change_password_successfully(client):
     )
     assert old_login.status_code == 401
 
+    # The old access token must also be invalidated.
+    invalidated_session = client.get(
+        "/api/auth/me",
+        headers=old_headers,
+    )
+    assert invalidated_session.status_code == 401
+
+    # A fresh login with the new password should work.
     new_login = client.post(
         "/api/auth/login",
         json={
@@ -245,6 +262,16 @@ def test_change_password_successfully(client):
         },
     )
     assert new_login.status_code == 200
+
+    new_token = new_login.json()["access_token"]
+    new_headers = {"Authorization": f"Bearer {new_token}"}
+
+    # The newly issued token should be valid.
+    after_change = client.get(
+        "/api/auth/me",
+        headers=new_headers,
+    )
+    assert after_change.status_code == 200
 
 
 def test_change_password_incorrect_current_password(client):

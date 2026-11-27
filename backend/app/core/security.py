@@ -20,13 +20,14 @@ def verify_password(password: str, hashed_password: str) -> bool:
     return password_hash.verify(password, hashed_password)
 
 
-def create_access_token(subject: str) -> str:
+def create_access_token(subject: str, token_version: int) -> str:
     expires_at = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
 
     payload = {
         "sub": subject,
+        "token_version": token_version,
         "exp": expires_at,
     }
 

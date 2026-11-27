@@ -30,3 +30,11 @@ def migrate_profile_photo_columns():
                     "ADD COLUMN profile_photo_public_id VARCHAR(255)"
                 )
             )
+
+        if "token_version" not in existing_columns:
+            connection.execute(
+                text(
+                    "ALTER TABLE users "
+                    "ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0"
+                )
+            )

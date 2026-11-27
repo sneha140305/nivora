@@ -39,7 +39,7 @@ const initialForm = {
 
 function Profile() {
   const navigate = useNavigate();
-  const { user, setUser } = useAuth();
+  const { user, setUser, logout } = useAuth();
   const photoInputRef = useRef(null);
 
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -222,7 +222,7 @@ function Profile() {
     setPasswordSaving(true);
 
     try {
-      const response = await apiRequest("/api/auth/change-password", {
+      await apiRequest("/api/auth/change-password", {
         method: "PUT",
         body: JSON.stringify({
           current_password,
@@ -236,7 +236,15 @@ function Profile() {
         confirm_password: "",
       });
 
-      setSuccess(response.message || "Password changed successfully!");
+      logout();
+
+      navigate("/login", {
+        replace: true,
+        state: {
+          message:
+            "Password changed successfully. Please log in with your new password.",
+        },
+      });
     } catch (err) {
       setError(err.message || "Unable to change your password.");
     } finally {
